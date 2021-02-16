@@ -2,7 +2,8 @@
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
 * text=auto
-
+*.lua linguist-vendored
+\AnimeizlePC\lib\ytdl_hook.lua linguist-vendored
 ###############################################################################
 # Set default behavior for command prompt diff.
 #
@@ -61,4 +62,3 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
-*.lua linguist-vendored
