@@ -1,0 +1,26 @@
+﻿<Page x:Class="AnimeizlePC.downloaded"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:AnimeizlePC"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="downloaded">
+
+    <Grid>
+        <ListView x:Name="listview">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <StackPanel PreviewMouseDown="openDownloaded">
+                            <Label Content="{Binding episode.episodename}"></Label>
+
+                        </StackPanel>
+                        <Button Content="Sil"></Button>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>
