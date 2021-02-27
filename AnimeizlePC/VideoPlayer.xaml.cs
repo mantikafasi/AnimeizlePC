@@ -17,7 +17,7 @@ namespace AnimeizlePC
 {
     /// <summary>
     /// Interaction logic for VideoPlayer.xaml
-    /// </summary>
+    /// </summary> 
     public partial class VideoPlayer : Window
     {
 		Anime anime; 
@@ -82,7 +82,8 @@ namespace AnimeizlePC
 		public void onError(object sender,EventArgs e)
         {
 			Dispatcher.Invoke(() => {Close(); });
-			MessageBox.Show("Video Yüklenirken bir hata oluştu Alternatif Desteklenmiyor veya Video Silinmiş Olabilir.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);	
+            MessageBox.Show("Video Yüklenirken bir hata oluştu Alternatif Desteklenmiyor veya Video Silinmiş Olabilir.Site Tarayıcıdan Açılıyor.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            Process.Start(anime.episode.watchurl);
 		}
 
 	}

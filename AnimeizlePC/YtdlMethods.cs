@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Json;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using MessageBox = System.Windows.MessageBox;
 
 namespace AnimeizlePC
@@ -47,8 +50,14 @@ namespace AnimeizlePC
             return output;
         }
         string directory= System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-        public void openWithmpv(Anime anime)
+        SQLiteManager sqLiteManager=SQLiteManager.getInstance();
+        public void openWithmpv(Anime anime,bool updateDB=true)
         {
+            if (updateDB)
+            {
+                sqLiteManager.AddData(anime);
+            }
+            
             VideoPlayer player = new VideoPlayer(anime);
             player.Show();
         }
@@ -92,7 +101,7 @@ namespace AnimeizlePC
             while (queue.Count > 0) {
                 Anime anime = queue.Dequeue();
                 AnimeEpisode episode = anime.episode;
-                episode.watchurl=episode.watchurl.Replace("[", "").Replace("]", "");
+
                 Process process = new Process();
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 //startInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -102,6 +111,7 @@ namespace AnimeizlePC
 
                 if (!string.IsNullOrEmpty(App.settings.saveLocation))
                 {
+                    //Ayarlardan video Adlandırma şeklini alıp videoyu ona göre adlandırma
                     saveLocation += App.settings.saveLocation+"\\";
                     
                     string videoname = App.settings.VideoName;
@@ -114,27 +124,52 @@ namespace AnimeizlePC
                     anime.episode.downloadLocation = saveLocation;
                 }
 
-                if (episode.watchurl.Contains("sibnet"))
-                {
-                    arguments += @"--config-location .\lib\sibnet.conf ";
-                }
 
-                startInfo.WorkingDirectory = directory;
-                startInfo.Arguments = @"/C .\lib\youtube-dl.exe " + arguments  +episode.watchurl;
-                Trace.WriteLine(startInfo.Arguments);
-                process.StartInfo = startInfo;
-                process.Start();
-                process.WaitForExit();
-                
-                if (File.Exists(saveLocation))
+                List<string> denemeListesi = new List<string>(); //bölümü indirmek için sahip olunan url ler listesi
+
+                Dictionary<string, object> fansublar;
+                if (episode.watchurl.StartsWith("{"))
                 {
-                    manager.AddData(anime, SQLiteManager.dataType.downloadedAnime);
-                    
+                    fansublar = JsonConvert.DeserializeObject<Dictionary<string, object>>(episode.watchurl);
+                    foreach (string key in fansublar.Keys.ToList())
+                    {
+                        JsonObject fansub = JsonConvert.DeserializeObject<JsonObject>(fansublar[key].ToString());
+                        foreach (string alternatif in fansub.Keys)
+                        {
+                            denemeListesi.Add(fansub[alternatif]);
+                        }
+
+                    }
                 }
                 else
                 {
+                    episode.watchurl = episode.watchurl.Replace("[", "").Replace("]", "");
+                    denemeListesi.Add(episode.watchurl);
+                }
+                startInfo.WorkingDirectory = directory;
+                foreach (string indirmeurlsi in denemeListesi)
+                {
+
+                    if (episode.watchurl.Contains("sibnet") && !arguments.Contains("--config-location")){arguments += @" --config-location .\lib\sibnet.conf ";}
+                    
+                    startInfo.Arguments = @"/C .\lib\youtube-dl.exe " + arguments + indirmeurlsi;
+                    Trace.WriteLine(startInfo.Arguments);
+                    process.StartInfo = startInfo;
+                    process.Start();
+                    process.WaitForExit();
+
+                    if (File.Exists(saveLocation))
+                    {
+                        manager.AddData(anime, SQLiteManager.dataType.downloadedAnime);
+                        break;
+                    }
+                }
+                
+                if (!File.Exists(saveLocation))
+                {
                     MessageBox.Show("Bölüm İndirilirken Bir Hata oluştu.");
                 }
+
 
                 
             }

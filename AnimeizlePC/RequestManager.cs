@@ -92,6 +92,8 @@ namespace AnimeizlePC
         public string Ozet { get; set; }
         public AnimeEpisode episode { get; set; }
 
+        public Anime Clone => (Anime) MemberwiseClone();
+
         public List<AnimeEpisode> episodes { get; set; }
         public override string ToString()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -10,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using AnimeizlePC.detailspageframes;
 
 namespace AnimeizlePC
 {
@@ -24,57 +26,19 @@ namespace AnimeizlePC
         public DetailsPage(Anime anim)
         {
             InitializeComponent();
-            this.DataContext = anim;
+            DataContext = anim;
             RequestManager api = RequestManager.getInstance();
             anime = api.getDetails(anim);
             ytdl = YtdlMethods.getInstance();
             sqlitemanager = SQLiteManager.getInstance();
+            Bolumler page = new Bolumler(anime, changeFrame);
+            frame.Navigate(page);
 
-            episodeList.ItemsSource = anime.episodes;
         }
 
-        private void Download(object sender, RoutedEventArgs e)
-        {
-            AnimeEpisode episode = (AnimeEpisode)(sender as Button).DataContext;
-            anime.episode = episode;
-            if (episode.watchurl != "bulunamadi"){ytdl.addToQueue(anime);}else{MessageBox.Show("Video URL'si Sunucuda Bulunamadi.", "Video URL'si bulunamadi.");}
-            
-        }
+        public void changeFrame(Page obje){if (obje == null){frame.GoBack();}else{frame.Navigate(obje);}}
 
-        private void OpenEpisode(object sender, MouseButtonEventArgs e)
-        {
-            AnimeEpisode episode = (AnimeEpisode)(sender as StackPanel).DataContext;
-            episode.watchurl =episode.watchurl.Replace("[", "").Replace("]", "");
-            anime.episode = episode;
-            if (episode.watchurl != "bulunamadi")
-            {
-                sqlitemanager.AddData(anime);
-                ytdl.openWithmpv(anime);
-            }
-            else
-            {
-                MessageBox.Show("Video URL'si Sunucuda Bulunamadi.","Video URL'si bulunamadi.");
-            }
-
-            
-        }
     }
 
-    public class Converter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value.ToString() == "bulunamadi")
-            {
-                return "Visible";
-            }
-
-            return "Hidden";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return null;
-        }
-    }
+ 
 }
